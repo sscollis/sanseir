@@ -15,4 +15,5 @@ Erlang_n = 100          ! Erlang number of samples
 Ro     = 2.7, 2.3, 1.0  ! reproduction rate
 rho    = 0.1            ! proportion of pre-tested exposed individuals
 c      = 0.05           ! mortality rate
+fa     = 0.20           ! fraction of community accounted for
 /

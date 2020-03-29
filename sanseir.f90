@@ -24,11 +24,11 @@ module seir_model
   integer :: nk 
   real :: Ro(mk), tk(mk)
   real :: P, Io, alpha, gam, beta(mk), rho, c, alphai, gammai, alpham, gammam
-  real :: to=0, tf=250, dt
+  real :: to=0, tf=250, dt, Fa=0.2
   integer :: nt
   integer :: Erlang_k=2, Erlang_n=100
 
-  namelist /model/ P, Io, alpham, gammam, Erlang_k, Erlang_n, Ro, rho, c
+  namelist /model/ P, Io, alpham, gammam, Erlang_k, Erlang_n, Ro, rho, c, Fa
   namelist /time/ to, tf, nt, tk, nk
 
 end module seir_model 
@@ -45,12 +45,12 @@ program sanseir
   use seir_model 
   implicit none
 
-  integer :: i, ns, ms=50
+  integer :: i, n, ns, ms=50
   external :: seir
   real, external :: erlang_sample
 
   integer, parameter :: neq = 8
-  real, allocatable :: U(:,:), t(:)
+  real, allocatable :: U(:,:), V(:), t(:)
 
   integer, parameter :: mfile=1
   integer :: narg, iarg, nfile=0, ifile(mfile)
@@ -109,21 +109,17 @@ program sanseir
 
 ! allocate storage
 
-  allocate ( U(neq,0:nt), t(0:nt) )
+  allocate ( U(neq,0:nt), V(neq), t(0:nt) )
 
 ! Setup time
 
   dt = (tf-to)/nt 
   write(*,"('Using timestep, dt = ',1pe12.4e3)") dt
-  t(0) = to
-  do i = 1, nt
-    t(i) = t(i-1) + dt
-  end do
 
 ! Setup model parameters
 
-! call random_init(.true.,.true.)
-  call random_seed()
+  call random_init(.true.,.true.)
+! call random_seed()
   alphai = max(one,erlang_sample(Erlang_k,alpham))
   gammai = max(one,erlang_sample(Erlang_k,gammam))
 
@@ -141,7 +137,27 @@ program sanseir
 ! begin the time loop
 
   do ns = 1, ms
+  write(*,*) "Computing sample: ", ns
+#if 1
+    t(0) = to
+    do i = 1, nt
+      U(:,i) = zero
+      do n = 1, Erlang_n 
+        alphai = max(one,erlang_sample(Erlang_k,alpham))
+        gammai = max(one,erlang_sample(Erlang_k,gammam))
+        alpha = one/alphai
+        gam   = one/gammai
+        beta  = Ro*gam
+        call srkck45(neq,U(:,i-1),V,t(i-1),dt,seir)
+        U(:,i) = U(:,i) + V(:)
+      end do
+      U(:,i) = U(:,i)/Erlang_n
+!     write(*,*) ns, i, sum(U(:,i)) 
+      t(i) = t(i-1) + dt
+    end do
+#else
     call advance(seir, neq, to, tf, nt, t, U)
+#endif
     write(ofile,"('output.',i0)") ns
     write(sfile,"('scaled.',i0)") ns
     open(unit=10,file=ofile)
@@ -149,8 +165,8 @@ program sanseir
     write(10,'("# t, S, E, Ih, Ic, Rh, Rc, Dh, Dc, Ih+0.2Ic, R, D")')
     write(20,'("# t, S, E, Ih, Ic, Rh, Rc, Dh, Dc, Ih+0.2Ic, R, D")')
     do i = 0, nt
-      write(10,10) t(i), U(:,i), U(3,i)+0.2*U(4,i), U(5,i)+U(6,i), U(7,i)+U(8,i)
-      write(20,10) t(i), U(:,i)/P, (U(3,i)+0.2*U(4,i))/P, (U(5,i)+U(6,i))/P, (U(7,i)+U(8,i))/P
+      write(10,10) t(i), U(:,i), U(3,i)+Fa*U(4,i), U(5,i)+U(6,i), U(7,i)+U(8,i)
+      write(20,10) t(i), U(:,i)/P, (U(3,i)+Fa*U(4,i))/P, (U(5,i)+U(6,i))/P, (U(7,i)+U(8,i))/P
     end do
     close(10)
     close(20)
@@ -199,7 +215,7 @@ subroutine seir(neq, U, t, dUdt)
   write(*,*) "t = ", t 
 #endif
 
-#if 1
+#if 0
   alphai = max(one,erlang_sample(Erlang_k,alpham))
   gammai = max(one,erlang_sample(Erlang_k,gammam))
 
