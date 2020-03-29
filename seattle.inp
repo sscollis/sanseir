@@ -6,10 +6,12 @@ nk = 3                  ! number of phases
 tk = 0, 45, 60          ! day of phase start
 /
 &model
-P      = 53e6           ! total population
+P      = 53.0e6         ! total population
 Io     = 1              ! intitial infected population
-alphai = 5.2            ! incubation period
-gammai = 3.0            ! infectious period
+alpham = 5.2            ! mean incubation period
+gammam = 3.0            ! mean infectious period
+Erlang_k = 2            ! Erlang shape
+Erlang_n = 100          ! Erlang number of samples
 Ro     = 2.7, 2.3, 1.0  ! reproduction rate
 rho    = 0.1            ! proportion of pre-tested exposed individuals
 c      = 0.05           ! mortality rate

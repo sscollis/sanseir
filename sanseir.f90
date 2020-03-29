@@ -23,11 +23,12 @@ module seir_model
   integer, parameter :: mk=4
   integer :: nk 
   real :: Ro(mk), tk(mk)
-  real :: P, Io, alpha, gam, beta(mk), rho, c, alphai, gammai
+  real :: P, Io, alpha, gam, beta(mk), rho, c, alphai, gammai, alpham, gammam
   real :: to=0, tf=250, dt
   integer :: nt
+  integer :: Erlang_k=2, Erlang_n=100
 
-  namelist /model/ P, Io, alphai, gammai, Ro, rho, c
+  namelist /model/ P, Io, alpham, gammam, Erlang_k, Erlang_n, Ro, rho, c
   namelist /time/ to, tf, nt, tk, nk
 
 end module seir_model 
@@ -44,26 +45,59 @@ program sanseir
   use seir_model 
   implicit none
 
-  integer :: i
+  integer :: i, ns, ms=50
   external :: seir
   real, external :: erlang_sample
 
   integer, parameter :: neq = 8
   real, allocatable :: U(:,:), t(:)
+
+  integer, parameter :: mfile=1
+  integer :: narg, iarg, nfile=0, ifile(mfile)
+  character(80) :: arg, iname, ofile, sfile
 !=============================================================================!
+
+! parse arguments
+
+  narg = iargc()
+  do iarg = 1, narg
+    call getarg(iarg,arg)
+    if (arg(1:1) .ne. '-') then
+      nfile = nfile + 1
+      if (nfile .gt. mfile) then
+        write(*,*) '>> Error in argument list, too many file names'
+        call exit(1)
+      end if
+      ifile(nfile) = iarg
+    else
+      select case (arg(1:3))
+      case ('-h ')
+        write(*,"('--------------------------------------------------')")
+        write(*,"('Usage: sanseir [options] [file]')")
+        write(*,"('--------------------------------------------------')")
+        write(*,"('   -h:  this help')")
+        write(*,"('--------------------------------------------------')")
+        call exit(0)
+      case default
+        write(*,"('Argument ',i2,' ignored.')") iarg
+       end select
+     end if
+   end do
 
   Ro = zero
   beta = zero
 
 ! Read in model parameters
 
-  open(10,file="seattle.inp")
+  if (nfile.gt.0) then
+    call getarg(ifile(1),iname)
+  else
+    iname = "seir.inp"
+  endif
+  open(10,file=iname,status='old')
   read(10,nml=time)
   read(10,nml=model) 
   close(10)
-
-  alphai = max(one,erlang_sample(2,alphai))
-  gammai = max(one,erlang_sample(2,gammai))
 
   write(*,'("Echo of namelist input:")')
   write(*,nml=time)
@@ -88,6 +122,11 @@ program sanseir
 
 ! Setup model parameters
 
+! call random_init(.true.,.true.)
+  call random_seed()
+  alphai = max(one,erlang_sample(Erlang_k,alpham))
+  gammai = max(one,erlang_sample(Erlang_k,gammam))
+
   alpha = one/alphai
   gam   = one/gammai
   beta  = Ro*gam
@@ -101,15 +140,20 @@ program sanseir
 
 ! begin the time loop
 
-  call advance(seir, neq, to, tf, nt, t, U)
-
-! output results
-
-  write(10,'("# t, S, E, Ih, Ic, Rh, Rc, Dh, Dc, Ih+0.2Ic, R, D")')
-  write(20,'("# t, S, E, Ih, Ic, Rh, Rc, Dh, Dc, Ih+0.2Ic, R, D")')
-  do i = 0, nt
-    write(10,10) t(i), U(:,i), U(3,i)+0.2*U(4,i), U(5,i)+U(6,i), U(7,i)+U(8,i)
-    write(20,10) t(i), U(:,i)/P, (U(3,i)+0.2*U(4,i))/P, (U(5,i)+U(6,i))/P, (U(7,i)+U(8,i))/P
+  do ns = 1, ms
+    call advance(seir, neq, to, tf, nt, t, U)
+    write(ofile,"('output.',i0)") ns
+    write(sfile,"('scaled.',i0)") ns
+    open(unit=10,file=ofile)
+    open(unit=20,file=sfile)
+    write(10,'("# t, S, E, Ih, Ic, Rh, Rc, Dh, Dc, Ih+0.2Ic, R, D")')
+    write(20,'("# t, S, E, Ih, Ic, Rh, Rc, Dh, Dc, Ih+0.2Ic, R, D")')
+    do i = 0, nt
+      write(10,10) t(i), U(:,i), U(3,i)+0.2*U(4,i), U(5,i)+U(6,i), U(7,i)+U(8,i)
+      write(20,10) t(i), U(:,i)/P, (U(3,i)+0.2*U(4,i))/P, (U(5,i)+U(6,i))/P, (U(7,i)+U(8,i))/P
+    end do
+    close(10)
+    close(20)
   end do
 
 10 format(12(1pe16.8E3,1x))
@@ -145,7 +189,7 @@ subroutine seir(neq, U, t, dUdt)
   use constants
   use seir_model 
   implicit none
-
+  real, external :: erlang_sample
   integer neq, i, k
   real U(neq), t, dUdt(neq), b
   real N, Ni, S, E, Ih, Ic, Rh, Rc
@@ -154,6 +198,16 @@ subroutine seir(neq, U, t, dUdt)
   write(*,*) "neq = ", neq
   write(*,*) "t = ", t 
 #endif
+
+#if 1
+  alphai = max(one,erlang_sample(Erlang_k,alpham))
+  gammai = max(one,erlang_sample(Erlang_k,gammam))
+
+  alpha = one/alphai
+  gam   = one/gammai
+  beta  = Ro*gam
+#endif
+
   N = zero
   do i = 1, neq
     N = N + U(i)
