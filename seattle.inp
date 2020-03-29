@@ -1,0 +1,16 @@
+&time
+to = 0                  ! initial time
+tf = 250                ! end time (days)
+nt = 750                ! number of time steps
+nk = 3                  ! number of phases
+tk = 0, 45, 60          ! day of phase start
+/
+&model
+P      = 53e6           ! total population
+Io     = 1              ! intitial infected population
+alphai = 5.2            ! incubation period
+gammai = 3.0            ! infectious period
+Ro     = 2.7, 2.3, 1.0  ! reproduction rate
+rho    = 0.1            ! proportion of pre-tested exposed individuals
+c      = 0.05           ! mortality rate
+/
