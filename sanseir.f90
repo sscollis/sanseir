@@ -143,6 +143,7 @@ program sanseir
     do i = 1, nt
       U(:,i) = zero
       do n = 1, Erlang_n 
+        V(:)   = zero
         alphai = max(one,erlang_sample(Erlang_k,alpham))
         gammai = max(one,erlang_sample(Erlang_k,gammam))
         alpha = one/alphai
@@ -152,7 +153,7 @@ program sanseir
         U(:,i) = U(:,i) + V(:)
       end do
       U(:,i) = U(:,i)/Erlang_n
-!     write(*,*) ns, i, sum(U(:,i)) 
+!     write(*,*) ns, i, sum(U(1:6,i)) 
       t(i) = t(i-1) + dt
     end do
 #else
@@ -210,25 +211,15 @@ subroutine seir(neq, U, t, dUdt)
   real U(neq), t, dUdt(neq), b
   real N, Ni, S, E, Ih, Ic, Rh, Rc
 !=============================================================================!
-#if 0
-  write(*,*) "neq = ", neq
-  write(*,*) "t = ", t 
-#endif
 
-#if 0
-  alphai = max(one,erlang_sample(Erlang_k,alpham))
-  gammai = max(one,erlang_sample(Erlang_k,gammam))
-
-  alpha = one/alphai
-  gam   = one/gammai
-  beta  = Ro*gam
-#endif
+! compute the effective total population
 
   N = zero
-  do i = 1, neq
+  do i = 1, 6 
     N = N + U(i)
   end do 
   Ni = one/N
+
   S  = U(1)
   E  = U(2)
   Ih = U(3)
@@ -240,7 +231,6 @@ subroutine seir(neq, U, t, dUdt)
   do k = 1, nk
     if (t.ge.tk(k)) b = beta(k)
   end do
-! write(*,*) t, b
 
   dUdt(1) = -b*Ic*S*Ni
   dUdt(2) =  b*Ic*S*Ni - alpha*E
@@ -250,12 +240,6 @@ subroutine seir(neq, U, t, dUdt)
   dUdt(6) =  gam*(one-c)*Ic
   dUdt(7) =  gam*c*Ih
   dUdt(8) =  gam*c*Ic
-
-#if 0
-  write(*,*) "U = ", U(:)
-  write(*,*) "dUdt = ",  dUdt(:)
-#endif
-  
   return
 end subroutine seir
 
