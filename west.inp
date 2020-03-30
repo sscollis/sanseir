@@ -1,19 +1,19 @@
 &time
-to = 0                  ! initial time
-tf = 250                ! end time (days)
-nt = 750                ! number of time steps
-nk = 3                  ! number of phases
-tk = 0, 45, 60          ! day of phase start
+to = 0                    ! initial time (days)
+tf = 250                  ! end time (days)
+nt = 750                  ! number of time steps
+nk = 3                    ! number of policy phases
+tk = 0, 45, 60            ! day of policy phase start
 /
 &model
-P      = 53.0e6         ! total population
-Io     = 1              ! intitial infected population
-alpham = 5.2            ! mean incubation period
-gammam = 3.0            ! mean infectious period
-Erlang_k = 2            ! Erlang shape
-Erlang_n = 100          ! Erlang number of samples
-Ro     = 2.7, 2.3, 1.0  ! reproduction rate
-rho    = 0.1            ! proportion of pre-tested exposed individuals
-c      = 0.05           ! mortality rate
-fa     = 0.20           ! fraction of community accounted for
+P        = 53.0e6         ! total population
+Io       = 1              ! intitial infected population
+alpham   = 5.2            ! mean incubation period
+gammam   = 3.0            ! mean infectious period
+Erlang_k = 2              ! Erlang shape
+Erlang_n = 100            ! Erlang number of samples
+Ro       = 2.7, 2.3, 1.0  ! reproduction rate
+rho      = 0.1            ! proportion of pre-tested exposed individuals
+c        = 0.05           ! mortality rate
+fa       = 0.20           ! fraction of community accounted for
 /

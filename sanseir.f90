@@ -189,23 +189,32 @@ program sanseir
 
 10 format(12(1pe16.8E3,1x))
   stop
-!=============================================================================!
 end program sanseir
 
-function erlang(x, k, mu)
+!=============================================================================!
+function erlang(x, k, mean)
+!=============================================================================!
   implicit none
   integer k
-  real erlang, x, mu, lambda, invfact
-  lambda = k/mu
+  real erlang, x, mean, lambda, invfact
+!=============================================================================!
+  lambda = k/mean
   invfact = 1.0/Gamma(real(k))
   erlang = lambda**k*x**(k-1)*exp(-lambda*x)*invfact
 end function erlang
 
-function erlang_sample(k, mu)
+!=============================================================================!
+function erlang_sample(k, mean)
+!=============================================================================!
   implicit none
   integer k, i
-  real erlang_sample, r(k), prod, mu, lambda
-  lambda = k/mu
+  real erlang_sample, r(k), prod, mean, lambda
+!=============================================================================!
+  if (k.eq.0) then
+    erlang_sample = mean 
+    return
+  end if
+  lambda = k/mean
   call random_number(r)
   prod = r(1)
   do i = 2, k
