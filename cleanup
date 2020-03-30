@@ -4,5 +4,5 @@
 #
 #   12/27/2019 
 #
-/bin/rm -f fort.* output.* scaled.*
+/bin/rm -f fort.* output.* scaled.* rates.*
 exit

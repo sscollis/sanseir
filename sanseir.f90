@@ -54,11 +54,11 @@ program sanseir
   real, external :: erlang_sample
 
   integer, parameter :: neq = 8
-  real, allocatable :: U(:,:), V(:), t(:)
+  real, allocatable :: U(:,:), V(:), dUdt(:,:), t(:)
 
   integer, parameter :: mfile=1
   integer :: narg, iarg, nfile=0, ifile(mfile)
-  character(80) :: arg, iname, ofile, sfile
+  character(80) :: arg, iname, ofile, sfile, rfile
 !=============================================================================!
 
 ! parse arguments
@@ -117,7 +117,7 @@ program sanseir
   
 ! allocate storage
 
-  allocate ( U(neq,0:nt), V(neq), t(0:nt) )
+  allocate ( U(neq,0:nt), V(neq), dUdt(neq,0:nt), t(0:nt) )
 
 ! Setup time
 
@@ -159,7 +159,6 @@ program sanseir
 
   do ns = 1, ms
     write(*,'("Computing sample: ",i0)') ns
-#if 1
     t(0) = to
     do i = 1, nt
       U(:,i) = zero
@@ -170,27 +169,32 @@ program sanseir
         alpha = one/alphai
         gam   = one/gammai
         beta  = Ro*gam
-        call srkck45(neq,U(:,i-1),V,t(i-1),dt,seir)
+        call rkck45(neq,U(:,i-1),V,t(i-1),dt,seir)
         U(:,i) = U(:,i) + V(:)
+        call seir(neq, U(:,i-1), t(i-1), V)
+        dUdt(:,i) = dUdt(:,i) + V(:)
       end do
       U(:,i) = U(:,i)/Erlang_n
+      dUdt(:,i) = dUdt(:,i)/Erlang_n
       t(i) = t(i-1) + dt
     end do
-#else
-    call advance(seir, neq, to, tf, nt, t, U)
-#endif
     write(ofile,"('output.',i0)") ns
     write(sfile,"('scaled.',i0)") ns
+    write(rfile,"('rates.',i0)") ns
     open(unit=10,file=ofile)
     open(unit=20,file=sfile)
+    open(unit=30,file=rfile)
     write(10,'("# t, S, E, Ih, Ic, Rh, Rc, Dh, Dc, Ih+0.2Ic, R, D")')
     write(20,'("# t, S, E, Ih, Ic, Rh, Rc, Dh, Dc, Ih+0.2Ic, R, D")')
+    write(30,'("# t, S, E, Ih, Ic, Rh, Rc, Dh, Dc, Ih+0.2Ic, R, D")')
     do i = 0, nt
       write(10,10) t(i), U(:,i), U(3,i)+Fa*U(4,i), U(5,i)+U(6,i), U(7,i)+U(8,i)
       write(20,10) t(i), U(:,i)/P, (U(3,i)+Fa*U(4,i))/P, (U(5,i)+U(6,i))/P, (U(7,i)+U(8,i))/P
+      write(30,10) t(i), dUdt(:,i), dUdt(3,i)+Fa*dUdt(4,i), dUdt(5,i)+dUdt(6,i), dUdt(7,i)+dUdt(8,i)
     end do
     close(10)
     close(20)
+    close(30)
   end do
 
 10 format(12(1pe16.8E3,1x))
@@ -273,30 +277,7 @@ subroutine seir(neq, U, t, dUdt)
 end subroutine seir
 
 !=============================================================================!
-subroutine advance(FUNC, neq, t1, t2, nstep, t, x)
-!=============================================================================!
-!
-! Advance from t1 to t2
-!
-!=============================================================================!
-  implicit none
-  external FUNC
-  integer neq, nstep, i
-  real t(nstep+1), x(neq,nstep+1)
-  real t1, t2, dt
-!=============================================================================!
-  dt = (t2 - t1)/nstep
-  t(1) = t1
-  do i = 1, nstep
-!   write(*,*) "Step: ", i, t(i), x(1,i)
-    call srkck45(neq, x(1,i), x(1,i+1), t(i), dt, FUNC)
-    t(i+1) = t(i) + dt
-  end do
-  return
-end subroutine advance
-
-!=============================================================================!
-subroutine SRKCK45(neq, yo, yf, to, h, FUNC)
+subroutine RKCK45(neq, yo, yf, to, h, FUNC)
 !=============================================================================!
 !
 ! Advance one time step Runge-Kutta Cash-Karp method
@@ -369,4 +350,4 @@ subroutine SRKCK45(neq, yo, yf, to, h, FUNC)
   end do
 
   return
-end subroutine SRKCK45
+end subroutine RKCK45
