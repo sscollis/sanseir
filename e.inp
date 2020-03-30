@@ -3,7 +3,7 @@ to = 0                    ! initial time (days)
 tf = 250                  ! end time (days)
 nt = 750                  ! number of time steps
 nk = 3                    ! number of policy phases
-tk = 0, 52, 67            ! day of policy phase start
+tk = 0, 50, 65            ! day of policy phase start
 /
 &model
 P        = 152.0e6        ! total population
@@ -14,7 +14,7 @@ Erlang_k = 2              ! Erlang shape
 Erlang_n = 100            ! Erlang number of samples
 Ro       = 2.9, 2.5, 1.0  ! reproduction rate
 rho      = 0.1            ! proportion of pre-tested exposed individuals
-c        = 0.05           ! mortality rate
+c        = 0.01           ! mortality rate
 fa       = 0.20           ! fraction of community accounted for
 alpha_min = 1.0           ! minimum value of alpha allowed
 gamma_min = 1.0           ! minimum value of gamma allowed

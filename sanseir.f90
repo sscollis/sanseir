@@ -252,7 +252,7 @@ subroutine seir(neq, U, t, dUdt)
  
   b = beta(1) 
   do k = 1, nk
-    if (t.ge.tk(k)) b = beta(k)
+    if (t.gt.tk(k)) b = beta(k)
   end do
 
   dUdt(1) = -b*Ic*S*Ni
