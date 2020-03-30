@@ -20,6 +20,8 @@ end module constants
 !=============================================================================!
 module seir_model
 
+
+  character(80) :: run_name="disease progression model"
   integer, parameter :: mk=3
   integer :: nk 
   real :: Ro(mk), tk(mk)
@@ -29,8 +31,8 @@ module seir_model
   integer :: Erlang_k=2, Erlang_n=100
   real    :: alpha_min=1, gamma_min=1
 
-  namelist /model/ P, Io, alpham, gammam, Erlang_k, Erlang_n, Ro, rho, c, Fa, &
-                   alpha_min, gamma_min
+  namelist /model/ run_name, P, Io, alpham, gammam, Erlang_k, Erlang_n, Ro, &
+                   rho, c, Fa, alpha_min, gamma_min
   namelist /time/ to, tf, nt, tk, nk
 
 end module seir_model 
@@ -101,6 +103,10 @@ program sanseir
   read(10,nml=model) 
   close(10)
 
+  write(*,'(80("="))')
+  write(*,'("SanSEIR: " a)') run_name
+  write(*,'(80("="))')
+
   write(*,'("Echo of namelist input:")')
   write(*,nml=time)
   if(nk.gt.mk) then
@@ -108,7 +114,7 @@ program sanseir
     call exit(1)
   endif 
   write(*,nml=model)
-
+  
 ! allocate storage
 
   allocate ( U(neq,0:nt), V(neq), t(0:nt) )
