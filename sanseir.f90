@@ -27,8 +27,10 @@ module seir_model
   real :: to=0, tf=250, dt, Fa=0.2
   integer :: nt
   integer :: Erlang_k=2, Erlang_n=100
+  real    :: alpha_min=1, gamma_min=1
 
-  namelist /model/ P, Io, alpham, gammam, Erlang_k, Erlang_n, Ro, rho, c, Fa
+  namelist /model/ P, Io, alpham, gammam, Erlang_k, Erlang_n, Ro, rho, c, Fa, &
+                   alpha_min, gamma_min
   namelist /time/ to, tf, nt, tk, nk
 
 end module seir_model 
@@ -134,6 +136,19 @@ program sanseir
   U(1,0) = P-Io
   U(2,0) = Io
 
+#ifdef TEST_ERLANG
+  alpha = 0
+  gam   = 0
+  do n = 1, 100000 
+    alphai = max(alpha_min,Erlang_sample(Erlang_k,alpham))
+    gammai = max(gamma_min,erlang_sample(Erlang_k,gammam))
+    alpha = alpha + alphai
+    gam   = gam   + gammai
+  end do
+  write(*,*) alpha/100000, gam/100000
+  call exit(0)
+#endif
+
 ! begin the time loop
 
   do ns = 1, ms
@@ -144,8 +159,8 @@ program sanseir
       U(:,i) = zero
       do n = 1, Erlang_n 
         V(:)   = zero
-        alphai = max(one,erlang_sample(Erlang_k,alpham))
-        gammai = max(one,erlang_sample(Erlang_k,gammam))
+        alphai = max(alpha_min,Erlang_sample(Erlang_k,alpham))
+        gammai = max(gamma_min,Erlang_sample(Erlang_k,gammam))
         alpha = one/alphai
         gam   = one/gammai
         beta  = Ro*gam
@@ -153,7 +168,6 @@ program sanseir
         U(:,i) = U(:,i) + V(:)
       end do
       U(:,i) = U(:,i)/Erlang_n
-!     write(*,*) ns, i, sum(U(1:6,i)) 
       t(i) = t(i-1) + dt
     end do
 #else
