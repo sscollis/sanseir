@@ -20,7 +20,7 @@ end module constants
 !=============================================================================!
 module seir_model
 
-  integer, parameter :: mk=4
+  integer, parameter :: mk=3
   integer :: nk 
   real :: Ro(mk), tk(mk)
   real :: P, Io, alpha, gam, beta(mk), rho, c, alphai, gammai, alpham, gammam
