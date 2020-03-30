@@ -152,7 +152,7 @@ program sanseir
 ! begin the time loop
 
   do ns = 1, ms
-  write(*,*) "Computing sample: ", ns
+    write(*,'("Computing sample: ",i0)') ns
 #if 1
     t(0) = to
     do i = 1, nt
