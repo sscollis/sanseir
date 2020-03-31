@@ -19,9 +19,8 @@ module constants
 end module constants
 !=============================================================================!
 module seir_model
-
-
-  character(80) :: run_name="disease progression model"
+  implicit none
+  character(80) :: title="disease progression model"
   integer, parameter :: mk=3
   integer :: nk=1 
   real :: Ro(mk), tk(mk)
@@ -31,11 +30,9 @@ module seir_model
   integer :: nt=0
   integer :: Erlang_k=2, Erlang_n=100
   real    :: alpha_min=1, gamma_min=1
-
-  namelist /model/ run_name, P, Io, alpham, gammam, Erlang_k, Erlang_n, Ro, &
+  namelist /model/ title, P, Io, alpham, gammam, Erlang_k, Erlang_n, Ro, &
                    rho, c, Fa, alpha_min, gamma_min
   namelist /time/ to, tf, nt, tk, nk
-
 end module seir_model 
 !=============================================================================!
 program sanseir 
@@ -105,7 +102,7 @@ program sanseir
   close(10)
 
   write(*,'(80("="))')
-  write(*,'("SanSEIR: " a)') run_name
+  write(*,'("SanSEIR: " a)') title
   write(*,'(80("="))')
 
   write(*,'("Echo of namelist input:")')
