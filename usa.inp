@@ -2,7 +2,7 @@
 ! Sample SanSEIR input file for all of USA
 ! Key Asumptions:
 !  1) Schedule of social distancing policies
-!  2) Overall mortality rate of 1.1%
+!  2) Overall mortality rate of 5.0%
 !  3) Starts from 5 infected individuals
 !  4) Testing is modest
 !
@@ -23,7 +23,7 @@ Erlang_k = 2              ! Erlang shape
 Erlang_n = 100            ! Erlang number of samples
 Ro       = 2.8, 2.2, 1.0  ! reproduction rate
 rho      = 0.1, 0.1, 0.1  ! proportion of pre-tested exposed individuals
-c        = 0.011          ! mortality rate
+c        = 0.05           ! mortality rate
 fa       = 0.20           ! fraction of community accounted for
 alpha_min = 1.0           ! minimum value of alpha allowed
 gamma_min = 1.0           ! minimum value of gamma allowed

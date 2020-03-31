@@ -6,7 +6,7 @@
 !  3) Starts from 5 infected individuals
 !  4) Testing is modest
 !
-1&time
+&time
 to = 0                    ! initial time (days)
 tf = 250                  ! end time (days)
 nt = 750                  ! number of time steps
