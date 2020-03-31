@@ -1,4 +1,5 @@
 !=============================================================================!
+
 module constants
 
   real, parameter :: zero    = 0.0000000000000000000d+0
@@ -17,11 +18,13 @@ module constants
   real, parameter :: eps     = 1.0000000000000000000d-9
 
 end module constants
+
 !=============================================================================!
+
 module seir_model
   implicit none
   character(80) :: title="disease progression model"
-  integer, parameter :: mk=3
+  integer, parameter :: mk=6
   integer :: nk=1 
   real :: Ro(mk), tk(mk)
   real :: P, Io, alpha, gam, beta(mk), rho(mk), c
@@ -30,16 +33,19 @@ module seir_model
   integer :: nt=0
   integer :: Erlang_k=2, Erlang_n=100
   real    :: alpha_min=1, gamma_min=1
+
   namelist /model/ title, P, Io, alpham, gammam, Erlang_k, Erlang_n, Ro, &
                    rho, c, Fa, alpha_min, gamma_min
   namelist /time/ to, tf, nt, tk, nk
 end module seir_model 
+
 !=============================================================================!
 program sanseir 
 !
-! Integrate the SIER epidemiological model 
+! Solve a stochastic SIER disease progression model 
 !
 ! S. Scott Collis
+! Copyright: (c)2020 S. Scott Collis
 !
 ! written: 3-29-2020 
 !=============================================================================!
@@ -86,8 +92,11 @@ program sanseir
      end if
    end do
 
+! Initialize parameters
+
   Ro = zero
   beta = zero
+  rho = zero
 
 ! Read in model parameters
 
@@ -249,20 +258,22 @@ subroutine seir(neq, U, t, dUdt)
   do i = 1, 6 
     N = N + U(i)
   end do 
-  Ni = one/N
+  Ni = one/N  ! inverse of total effective population
 
-  S  = U(1)
-  E  = U(2)
-  Ih = U(3)
-  Ic = U(4)
-  Rh = U(5)
-  Rc = U(6)
- 
+  S  = U(1)   ! susceptable population
+  E  = U(2)   ! exposed population
+  Ih = U(3)   ! Infected population in a hospital
+  Ic = U(4)   ! Infected population in community
+  Rh = U(5)   ! Recovered population in hospital
+  Rc = U(6)   ! Recovered population in community
+
+! use time varying contact rate and testing fractions
+
   b = beta(1) 
   do k = 1, nk
     if (t.gt.tk(k)) then
-      b = beta(k)
-      r = rho(k)
+      b = beta(k)         ! current contact rate
+      r = rho(k)          ! current testing fraction
     endif
   end do
 
@@ -274,6 +285,7 @@ subroutine seir(neq, U, t, dUdt)
   dUdt(6) =  gam*(one-c)*Ic
   dUdt(7) =  gam*c*Ih
   dUdt(8) =  gam*c*Ic
+
   return
 end subroutine seir
 
