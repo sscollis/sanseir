@@ -23,11 +23,12 @@ module seir_model
 
   character(80) :: run_name="disease progression model"
   integer, parameter :: mk=3
-  integer :: nk 
+  integer :: nk=1 
   real :: Ro(mk), tk(mk)
-  real :: P, Io, alpha, gam, beta(mk), rho, c, alphai, gammai, alpham, gammam
+  real :: P, Io, alpha, gam, beta(mk), rho(mk), c
+  real :: alphai, gammai, alpham, gammam
   real :: to=0, tf=250, dt, Fa=0.2
-  integer :: nt
+  integer :: nt=0
   integer :: Erlang_k=2, Erlang_n=100
   real    :: alpha_min=1, gamma_min=1
 
@@ -53,7 +54,7 @@ program sanseir
   external :: seir
   real, external :: erlang_sample
 
-  integer, parameter :: neq = 8
+  integer, parameter :: neq=8
   real, allocatable :: U(:,:), V(:), dUdt(:,:), t(:)
 
   integer, parameter :: mfile=1
@@ -241,7 +242,7 @@ subroutine seir(neq, U, t, dUdt)
   implicit none
   real, external :: erlang_sample
   integer neq, i, k
-  real U(neq), t, dUdt(neq), b
+  real U(neq), t, dUdt(neq), b, r
   real N, Ni, S, E, Ih, Ic, Rh, Rc
 !=============================================================================!
 
@@ -262,13 +263,16 @@ subroutine seir(neq, U, t, dUdt)
  
   b = beta(1) 
   do k = 1, nk
-    if (t.gt.tk(k)) b = beta(k)
+    if (t.gt.tk(k)) then
+      b = beta(k)
+      r = rho(k)
+    endif
   end do
 
   dUdt(1) = -b*Ic*S*Ni
   dUdt(2) =  b*Ic*S*Ni - alpha*E
-  dUdt(3) =  alpha*rho*E - gam*Ih 
-  dUdt(4) =  alpha*(one-rho)*E - gam*Ic 
+  dUdt(3) =  alpha*r*E - gam*Ih 
+  dUdt(4) =  alpha*(one-r)*E - gam*Ic 
   dUdt(5) =  gam*(one-c)*Ih 
   dUdt(6) =  gam*(one-c)*Ic
   dUdt(7) =  gam*c*Ih
