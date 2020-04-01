@@ -191,6 +191,9 @@ program sanseir
     open(unit=10,file=ofile)
     open(unit=20,file=sfile)
     open(unit=30,file=rfile)
+!====================================================================
+!                 1  2  3   4   5   6   7   8   9     10    11 12
+!====================================================================
     write(10,'("# t, S, E, Ih, Ic, Rh, Rc, Dh, Dc, Ih+0.2Ic, R, D")')
     write(20,'("# t, S, E, Ih, Ic, Rh, Rc, Dh, Dc, Ih+0.2Ic, R, D")')
     write(30,'("# t, S, E, Ih, Ic, Rh, Rc, Dh, Dc, Ih+0.2Ic, R, D")')
