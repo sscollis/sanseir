@@ -44,10 +44,17 @@ program sanseir
 !
 ! Solve a stochastic SIER disease progression model 
 !
-! S. Scott Collis
-! Copyright: (c)2020 S. Scott Collis
+! This follows the formulation and approach presented in:
 !
-! written: 3-29-2020 
+! Yao-Ye Yeo, Rao-Rui Yeo, Wan-Jin Yeo, "A Computational Model for Estimating 
+! the Progression of the COVID-19 Cases in the US West and East Coasts",  
+! MedRxiv, March 2020, https://doi.org/10.1101/2020.03.24.20043026
+!
+! Author:  S. Scott Collis
+!
+! Copyright: (c)2020 S. Scott Collis, All rights reserved
+!
+! Written: 3-29-2020 
 !=============================================================================!
   use constants
   use seir_model 
