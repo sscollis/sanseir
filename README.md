@@ -45,8 +45,7 @@ Item       |  Description
 
 ## Baseline results:  Infections on the West Coast
 
-![West Coast Infections](https://github.com/sscollis/sanseir/blob/master/yeo-etal/west/west-infected.pdf)
-
+![West Coast Infections](https://github.com/sscollis/sanseir/blob/master/yeo-etal/west/west-infected.png)
 
 S. Scott Collis
 Thu Apr  2 06:42:42 MDT 2020
