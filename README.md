@@ -1,15 +1,14 @@
 # SanSEIR 
 
-Solves a stochastic SEIR model for disease progression. `SanSEIR` attempts to 
-reproduce the results presented in the paper
+Solves a stochastic SEIR model for disease progression. `SanSEIR` 
+reproduces the results presented in the paper
 
 Yao-Ye Yeo, Rao-Rui Yeo, Wan-Jin Yeo, *A Computational Model for Estimating the 
 Progression of the COVID-19 Cases in the US West and East Coasts*,  MedRxiv, 
 https://doi.org/10.1101/2020.03.24.20043026
 
 Sample results based on the inputs of Yeo et al. are given in the `yeo-etal` 
-directory.  At this time, SanSEIR predict significantly lower infections
-then those in the above paper by about a factor of 2.
+directory. 
 
 ## Building and Running 
 To build with `gfortran` simply:
