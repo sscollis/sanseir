@@ -1,11 +1,15 @@
 # sanseir
 Solve a stochastic SEIR model for disease progression
 
-This code attempts to reproduce the results presented in the paper
+`SanSEIR` attempts to reproduce the results presented in the paper
 
 Yao-Ye Yeo, Rao-Rui Yeo, Wan-Jin Yeo, *A Computational Model for Estimating the 
 Progression of the COVID-19 Cases in the US West and East Coasts*,  MedRxiv, 
 https://doi.org/10.1101/2020.03.24.20043026
+
+Sample results based on the inputs of Yeo et al. are given in the `yeo-etal` 
+directory.  At this time, my results predict significantly lower infections
+then those in the above paper.
 
 ## Building and Running 
 To build with `gfortran` simply:
@@ -33,7 +37,7 @@ directory.
 
 Directory  |  Description
 -----------|---------------------------------------------------------------
-`Yeo-etal` |  Inputs and results for https://doi.org/10.1101/2020.03.24.20043026 
+`yeo-etal` |  Inputs and results for https://doi.org/10.1101/2020.03.24.20043026 
 `test`     |  Additional experimental input files 
 `plot`     |  Scripts to make plots using `gnuplot` 
 
