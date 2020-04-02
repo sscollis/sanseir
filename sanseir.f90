@@ -152,9 +152,15 @@ program sanseir
 ! set the initial condition
 ! U = {S, E, Ih, Ic, Rh, Rc, Dh, Dc}
 
+#if 0
   U(:,:) = zero
   U(1,0) = P-Io
   U(2,0) = Io
+#else
+  U(:,:) = zero
+  U(1,0) = P-Io
+  U(4,0) = Io
+#endif
 
 #ifdef TEST_ERLANG
   alpha = 0
