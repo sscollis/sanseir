@@ -1,7 +1,5 @@
 !=============================================================================!
-
 module constants
-
   real, parameter :: zero    = 0.0000000000000000000d+0
   real, parameter :: pt25    = 2.5000000000000000000d-1
   real, parameter :: pt33    = 3.3333333333333333333d-1
@@ -16,14 +14,11 @@ module constants
   real, parameter :: four    = 4.0000000000000000000d+0
   real, parameter :: pi      = 3.1415926535897932385d+0
   real, parameter :: eps     = 1.0000000000000000000d-9
-
 end module constants
-
 !=============================================================================!
-
 module seir_model
   implicit none
-  character(80) :: title="disease progression model"
+  character(60) :: title="disease progression model"
   integer, parameter :: mk=6
   integer :: nk=1 
   real :: Ro(mk), tk(mk)
@@ -38,7 +33,6 @@ module seir_model
                    rho, c, Fa, alpha_min, gamma_min
   namelist /time/ to, tf, nt, tk, nk
 end module seir_model 
-
 !=============================================================================!
 program sanseir 
 !
@@ -70,6 +64,8 @@ program sanseir
   integer, parameter :: mfile=1
   integer :: narg, iarg, nfile=0, ifile(mfile)
   character(80) :: arg, iname, ofile, sfile, rfile
+
+  logical :: use_rk4=.false.
 !=============================================================================!
 
 ! parse arguments
@@ -86,18 +82,22 @@ program sanseir
       ifile(nfile) = iarg
     else
       select case (arg(1:3))
+      case ('-rk')
+        write(*,'("Using RK4 instead of RKCK45")')
+        use_rk4 = .true.
       case ('-h ')
         write(*,"('--------------------------------------------------')")
         write(*,"('Usage: sanseir [options] [file]')")
         write(*,"('--------------------------------------------------')")
-        write(*,"('   -h:  this help')")
+        write(*,"('   -h:  this help                                 ')")
+        write(*,"('  -rk:  use RK4 instead of RKCK45                 ')")
         write(*,"('--------------------------------------------------')")
         call exit(0)
       case default
         write(*,"('Argument ',i2,' ignored.')") iarg
-       end select
-     end if
-   end do
+      end select
+    end if
+  end do
 
 ! Initialize parameters
 
@@ -183,7 +183,11 @@ program sanseir
         alpha = one/alphai
         gam   = one/gammai
         beta  = Ro*gam
-        call rkck45(neq,U(:,i-1),V,t(i-1),dt,seir)
+        if (use_rk4) then
+          call rk4(neq,U(:,i-1),V,t(i-1),dt,seir)
+        else
+          call rkck45(neq,U(:,i-1),V,t(i-1),dt,seir)
+        endif
         U(:,i) = U(:,i) + V(:)
         call seir(neq, U(:,i-1), t(i-1), V)
         dUdt(:,i) = dUdt(:,i) + V(:)
@@ -198,16 +202,18 @@ program sanseir
     open(unit=10,file=ofile)
     open(unit=20,file=sfile)
     open(unit=30,file=rfile)
-!====================================================================
+!===============================================================================
 !                 1  2  3   4   5   6   7   8   9     10    11 12
-!====================================================================
+!===============================================================================
     write(10,'("# t, S, E, Ih, Ic, Rh, Rc, Dh, Dc, Ih+0.2Ic, R, D")')
     write(20,'("# t, S, E, Ih, Ic, Rh, Rc, Dh, Dc, Ih+0.2Ic, R, D")')
     write(30,'("# t, S, E, Ih, Ic, Rh, Rc, Dh, Dc, Ih+0.2Ic, R, D")')
     do i = 0, nt
       write(10,10) t(i), U(:,i), U(3,i)+Fa*U(4,i), U(5,i)+U(6,i), U(7,i)+U(8,i)
-      write(20,10) t(i), U(:,i)/P, (U(3,i)+Fa*U(4,i))/P, (U(5,i)+U(6,i))/P, (U(7,i)+U(8,i))/P
-      write(30,10) t(i), dUdt(:,i), dUdt(3,i)+Fa*dUdt(4,i), dUdt(5,i)+dUdt(6,i), dUdt(7,i)+dUdt(8,i)
+      write(20,10) t(i), U(:,i)/P, (U(3,i)+Fa*U(4,i))/P, (U(5,i)+U(6,i))/P, &
+                   (U(7,i)+U(8,i))/P
+      write(30,10) t(i), dUdt(:,i), dUdt(3,i)+Fa*dUdt(4,i), &
+                   dUdt(5,i)+dUdt(6,i), dUdt(7,i)+dUdt(8,i)
     end do
     close(10)
     close(20)
@@ -374,3 +380,48 @@ subroutine RKCK45(neq, yo, yf, to, h, FUNC)
 
   return
 end subroutine RKCK45
+
+!***********************************************************************
+!> \brief Advance one time step using fourth order (real) Runge-Kutta
+!> \param[in] neq number of equations
+!> \param[in] yo initial value
+!> \param[out] yf final value
+!> \param[in] to intial time
+!> \param[in] h time step
+!> \param[in] FUNC function to integrate
+!***********************************************************************
+subroutine RK4(neq, yo, yf, to, h, FUNC)
+!***********************************************************************
+!
+! Advance one time step using fourth order (real) Runge-Kutta
+!
+!***********************************************************************
+  external FUNC
+  integer  neq
+  real     to, h
+  real     yo(neq), yf(neq)
+  real     f(neq), k1(neq), k2(neq), k3(neq), k4(neq), q(neq)
+
+  call FUNC(neq, yo, to, f)
+  do j = 1 , neq
+    k1(j) = h*f(j)
+    q(j) = yo(j) + 0.5*k1(j)
+  end do
+  call FUNC(neq, q, to+0.5*h, f)
+  do j = 1 , neq
+    k2(j) = h*f(j)
+    q(j) = yo(j) + 0.5*k2(j)
+  end do
+  call FUNC(neq, q, to+0.5*h, f)
+  do j = 1 , neq
+    k3(j) = h*f(j)
+    q(j) = yo(j) + k3(j)
+  end do
+  call FUNC(neq, q, to+h, f)
+  do j = 1 , neq
+    k4(j) = h*f(j)
+    yf(j) = yo(j)+k1(j)/6.+(k2(j)+k3(j))/3.+k4(j)/6.
+  end do
+
+  return
+end subroutine RK4
