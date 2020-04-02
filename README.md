@@ -24,7 +24,7 @@ directory.
 
 Directory  |  Description
 -----------|---------------------------------------------------------------
-`Yeo-etal'`|  Reproduces results in https://doi.org/10.1101/2020.03.24.20043026 
+`Yeo-etal` |  Reproduces results in https://doi.org/10.1101/2020.03.24.20043026 
 `test`     |  Additional experimental input files 
 `plot`     |  Scripts to make plots using `gnuplot` 
 
