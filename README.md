@@ -35,12 +35,13 @@ directory.
 
 ## Descriptions of contents
 
-Directory  |  Description
+Item       |  Description
 -----------|---------------------------------------------------------------
 `yeo-etal` |  Inputs and results for https://doi.org/10.1101/2020.03.24.20043026 
 `test`     |  Additional experimental input files 
 `plot`     |  Scripts to make plots using `gnuplot` 
-
+`sanseir.f90` |  SanSEIR source code in FORTRAN90 
+`cleanup`  |  Script to cleanup all output files from SanSEIR` 
 
 S. Scott Collis
 Thu Apr  2 06:42:42 MDT 2020
