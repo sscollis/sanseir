@@ -1,5 +1,6 @@
 !
 ! Sample SanSEIR input file for all of USA
+!
 ! Key Asumptions:
 !  1) Schedule of social distancing policies
 !  2) Overall mortality rate of 5.0%
@@ -11,7 +12,7 @@ to = 0                    ! initial time (days)
 tf = 250                  ! end time (days)
 nt = 750                  ! number of time steps
 nk = 3                    ! number of policy phases
-tk = 0, 45, 60            ! day of policy phase start
+tk = 0, 52, 67            ! day of policy phase start
 /
 &model
 title    = "USA with limited testing"
@@ -21,7 +22,7 @@ alpham   = 5.2            ! mean incubation period
 gammam   = 3.0            ! mean infectious period
 Erlang_k = 2              ! Erlang shape
 Erlang_n = 100            ! Erlang number of samples
-Ro       = 2.8, 2.2, 1.0  ! reproduction rate
+Ro       = 2.8, 2.4, 1.0  ! reproduction rate
 rho      = 0.1, 0.1, 0.1  ! proportion of pre-tested exposed individuals
 c        = 0.05           ! mortality rate
 fa       = 0.20           ! fraction of community accounted for
