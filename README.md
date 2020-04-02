@@ -47,5 +47,13 @@ Item       |  Description
 
 ![West Coast Infections](https://github.com/sscollis/sanseir/blob/master/yeo-etal/west/west-infected.png)
 
+## Baseline results:  Infections on the East Coast
+
+![East Coast Infections](https://github.com/sscollis/sanseir/blob/master/yeo-etal/east/east-infected.png)
+
+## Baseline results:  Infections for USA 
+
+![USA Infections](https://github.com/sscollis/sanseir/blob/master/yeo-etal/usa/usa-infected.png)
+
 S. Scott Collis\
 Thu Apr  2 06:42:42 MDT 2020
