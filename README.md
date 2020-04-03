@@ -20,12 +20,14 @@ You will need to modify the `Makefile` if you use a different FORTRAN compiler.
 Once you have `sanseir` build, to run simply pass the input file (in FORTRAN 
 namelist format) as an argument
 
-    sanseir.exe usa.inp
+    cd yeo-etal/usa
+    ../../sanseir.exe usa.inp
     
 This generates an ensemble of 50 runs with output files called 
 `output.*, scaled.*, rates.*`.
 
-These can be plotted using `gnuplot`.  For example, to plot the cummulative deaths
+These can be plotted using `gnuplot`.  For example, to plot the cummulative 
+deaths
 
     gnuplot
     plot for [i=1:50] file=sprintf("output.%d",i) file using 1:12 w l lt 'grey' title ""
