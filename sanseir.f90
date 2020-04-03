@@ -47,7 +47,7 @@ program sanseir
 !
 ! This follows the formulation and approach presented in:
 !
-! Yao-Ye Yeo, Rao-Rui Yeo, Wan-Jin Yeo, "A Computational Model for Estimating 
+! Yao Ye Yeo, Yao-Rui Yeo, Wan-Jin Yeo, "A Computational Model for Estimating 
 ! the Progression of the COVID-19 Cases in the US West and East Coasts",  
 ! MedRxiv, March 2020, https://doi.org/10.1101/2020.03.24.20043026
 !
