@@ -25,7 +25,7 @@ end module constants
 module seir_model
   implicit none
   character(60) :: title="disease progression model"
-  integer, parameter :: mk=6
+  integer, parameter :: mk=6   ! max number of phases
   integer :: nk=1 
   real :: Ro(mk), tk(mk)
   real :: P, Io, alpha, gam, beta(mk), rho(mk), c
