@@ -24,6 +24,9 @@ OBJECTS = sanseir.o
 
 all: $(NAME) 
 
+docs:
+	doxygen
+
 $(NAME): $(OBJECTS)
 	$(FC) $(OFLAGS) $(OBJECTS) $(LIB)
 

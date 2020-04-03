@@ -239,7 +239,7 @@ end program sanseir
 
 !=============================================================================!
 !> \brief Erlang probability distribution 
-!> \paramp[in] x value for which probability is sought
+!> \param[in] x value for which probability is sought
 !> \param[in] k Erlang shape parameter 
 !> \param[in] mean Mean value of the distribution 
 !> \return erlang probability from Erlang_k distribution 
