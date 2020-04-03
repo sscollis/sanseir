@@ -1,3 +1,5 @@
+.DS_Store
+
 # Prerequisites
 *.d
 
@@ -30,3 +32,8 @@
 *.exe
 *.out
 *.app
+
+# Outputs
+output.*
+scaled.*
+rates.*
