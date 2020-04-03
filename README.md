@@ -11,6 +11,7 @@ Sample results based on the inputs of Yeo et al. are given in the `yeo-etal`
 directory. 
 
 ## Building and Running 
+
 To build with `gfortran` simply:
 
     make
@@ -55,4 +56,4 @@ Item       |  Description
 ![USA Infections](https://github.com/sscollis/sanseir/blob/master/yeo-etal/usa/usa-infected.png)
 
 S. Scott Collis\
-Thu Apr  2 06:42:42 MDT 2020
+Fri Apr  3 06:01:56 MDT 2020
