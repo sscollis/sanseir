@@ -33,6 +33,14 @@ These can be plotted using `gnuplot`.  For example, to plot the cummulative deat
 There are a number of `gnuplot` scripts for making typical plots in the `plot`
 directory.
 
+For example, to make the West Coast plot shown at the bottom of this page, 
+do the following
+
+    cd yeo-etal/west
+    ../../sanseir west.inp
+    gnuplot
+    load "../../plot/all-infected.com"
+
 ## Descriptions of contents
 
 Item       |  Description
