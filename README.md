@@ -39,7 +39,7 @@ For example, to make the West Coast plot shown at the bottom of this page,
 do the following
 
     cd yeo-etal/west
-    ../../sanseir west.inp
+    ../../sanseir.exe west.inp
     gnuplot
     load "../../plot/all-infected.com"
 
