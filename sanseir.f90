@@ -1,4 +1,8 @@
 !=============================================================================!
+!> \file sanseir.f90 
+!> \brief Solves a stochastic SEIR model
+!> \author S. Scott Collis
+!=============================================================================!
 module constants
   real, parameter :: zero    = 0.0000000000000000000d+0
   real, parameter :: pt25    = 2.5000000000000000000d-1
@@ -15,7 +19,9 @@ module constants
   real, parameter :: pi      = 3.1415926535897932385d+0
   real, parameter :: eps     = 1.0000000000000000000d-9
 end module constants
+
 !=============================================================================!
+
 module seir_model
   implicit none
   character(60) :: title="disease progression model"
@@ -33,6 +39,7 @@ module seir_model
                    rho, c, Fa, alpha_min, gamma_min
   namelist /time/ to, tf, nt, tk, nk
 end module seir_model 
+
 !=============================================================================!
 program sanseir 
 !
@@ -152,7 +159,7 @@ program sanseir
 ! set the initial condition
 ! U = {S, E, Ih, Ic, Rh, Rc, Dh, Dc}
 
-#if 0
+#ifdef SANSEIR_ORIGINAL_IC 
   U(:,:) = zero
   U(1,0) = P-Io
   U(2,0) = Io
@@ -208,9 +215,9 @@ program sanseir
     open(unit=10,file=ofile)
     open(unit=20,file=sfile)
     open(unit=30,file=rfile)
-!===============================================================================
-!                 1  2  3   4   5   6   7   8   9     10    11 12
-!===============================================================================
+!=============================================================================!
+! Column Index:   1  2  3   4   5   6   7   8   9     10    11  12
+!=============================================================================!
     write(10,'("# t, S, E, Ih, Ic, Rh, Rc, Dh, Dc, Ih+0.2Ic, R, D")')
     write(20,'("# t, S, E, Ih, Ic, Rh, Rc, Dh, Dc, Ih+0.2Ic, R, D")')
     write(30,'("# t, S, E, Ih, Ic, Rh, Rc, Dh, Dc, Ih+0.2Ic, R, D")')
@@ -231,6 +238,12 @@ program sanseir
 end program sanseir
 
 !=============================================================================!
+!> \brief Erlang probability distribution 
+!> \paramp[in] x value for which probability is sought
+!> \param[in] k Erlang shape parameter 
+!> \param[in] mean Mean value of the distribution 
+!> \return erlang probability from Erlang_k distribution 
+!=============================================================================!
 function erlang(x, k, mean)
 !=============================================================================!
   implicit none
@@ -242,6 +255,11 @@ function erlang(x, k, mean)
   erlang = lambda**k*x**(k-1)*exp(-lambda*x)*invfact
 end function erlang
 
+!=============================================================================!
+!> \brief Sample from an Erlang distribution 
+!> \param[in] k Erlang shape parameter 
+!> \param[in] mean Mean value of the distribution 
+!> \return erlang_sample sample from Erlang_k distribution 
 !=============================================================================!
 function erlang_sample(k, mean)
 !=============================================================================!
@@ -262,6 +280,12 @@ function erlang_sample(k, mean)
   erlang_sample = -1.0/lambda*log(prod) 
 end function erlang_sample
 
+!=============================================================================!
+!> \brief Compute the time-derivative of the SEIR model
+!> \param[in] neq number of equations
+!> \param[in] U state fector at time t
+!> \param[in] t current time
+!> \param[out] dUdt time-derivative at time t 
 !=============================================================================!
 subroutine seir(neq, U, t, dUdt)
 !=============================================================================!
@@ -311,6 +335,14 @@ subroutine seir(neq, U, t, dUdt)
   return
 end subroutine seir
 
+!=============================================================================!
+!> \brief Advance one time step using Runge-Kutta Cash-Karp 4/5 method
+!> \param[in] neq number of equations
+!> \param[in] yo initial value
+!> \param[out] yf final value
+!> \param[in] to intial time
+!> \param[in] h time step
+!> \param[in] FUNC function to integrate
 !=============================================================================!
 subroutine RKCK45(neq, yo, yf, to, h, FUNC)
 !=============================================================================!
@@ -387,7 +419,7 @@ subroutine RKCK45(neq, yo, yf, to, h, FUNC)
   return
 end subroutine RKCK45
 
-!***********************************************************************
+!=============================================================================!
 !> \brief Advance one time step using fourth order (real) Runge-Kutta
 !> \param[in] neq number of equations
 !> \param[in] yo initial value
@@ -395,13 +427,13 @@ end subroutine RKCK45
 !> \param[in] to intial time
 !> \param[in] h time step
 !> \param[in] FUNC function to integrate
-!***********************************************************************
+!=============================================================================!
 subroutine RK4(neq, yo, yf, to, h, FUNC)
-!***********************************************************************
+!=============================================================================!
 !
 ! Advance one time step using fourth order (real) Runge-Kutta
 !
-!***********************************************************************
+!=============================================================================!
   external FUNC
   integer  neq
   real     to, h
