@@ -3,8 +3,8 @@
 ! Key Asumptions:
 !  1) Schedule of social distancing policies
 !  2) Overall mortality rate of 5%
-!  3) Starts from 5 infected individuals
-!  4) Testing is modest
+!  3) Starts from 1 infected individuals
+!  4) Testing is modest at 10%
 !
 &time
 to = 0                    ! initial time (days)
