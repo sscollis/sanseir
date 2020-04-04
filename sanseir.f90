@@ -1,8 +1,9 @@
-!=============================================================================!
 !> \file sanseir.f90 
 !> \brief Solves a stochastic SEIR model
 !> \author S. Scott Collis
 !=============================================================================!
+
+!> \brief Useful constants
 module constants
   real, parameter :: zero    = 0.0000000000000000000d+0
   real, parameter :: pt25    = 2.5000000000000000000d-1
@@ -22,18 +23,32 @@ end module constants
 
 !=============================================================================!
 
+!> \brief SEIR Model parmameters
 module seir_model
   implicit none
-  character(60) :: title="disease progression model"
-  integer, parameter :: mk=6   ! max number of phases
-  integer :: nk=1 
-  real :: Ro(mk), tk(mk)
-  real :: P, Io, alpha, gam, beta(mk), rho(mk), c
-  real :: alphai, gammai, alpham, gammam
-  real :: to=0, tf=250, dt, Fa=0.2
-  integer :: nt=0
-  integer :: Erlang_k=2, Erlang_n=100
-  real    :: alpha_min=1, gamma_min=1
+  character(60) :: title="disease progression model"  !< Title of run
+  integer, parameter :: mk=6   !< max number of phases
+  integer :: nk=1              !< number of phases
+  real :: Ro(mk)               !< Reproduction rate per phase
+  real :: tk(mk)               !< Time of each phase
+  real :: P                    !< Total population
+  real :: Io                   !< Initial infected (in Ic)
+  real :: alphat               !< Reciprocal of incupation period: \f$\tilde\alpha = \alpha^{-1}\f$
+  real :: gammat               !< Reciprocal of infectious period: \f$\tilde\gamma = \gamma^{-1}\f$
+  real :: beta(mk)             !< Contact rate (per phase)
+  real :: rho(mk)              !< Testing fraction (per phase)
+  real :: c                    !< Mortality rate
+  real :: alpham               !< Mean value for incubation period, \f$\alpha\f$
+  real :: gammam               !< Mean value for infectious period, \f$\gamma\f$
+  real :: to=0                 !< Starting time (days)
+  real :: tf=250               !< End time (days)
+  real :: dt                   !< time step
+  real :: Fa=0.2               !< Fraction of infected accounted for
+  integer :: nt=0              !< number of time steps
+  integer :: Erlang_k=2        !< Shape of Erlang distribution
+  integer :: Erlang_n=100      !< Number of Erlang samples
+  real    :: alpha_min=1       !< Minimum value of \f$\alpha\f$
+  real    :: gamma_min=1       !< Minimum value of \f$\gamma\f$
 
   namelist /model/ title, P, Io, alpham, gammam, Erlang_k, Erlang_n, Ro, &
                    rho, c, Fa, alpha_min, gamma_min
@@ -41,9 +56,9 @@ module seir_model
 end module seir_model 
 
 !=============================================================================!
+!> \brief SanSEIR solves a stochastic SEIR disease progression model
 program sanseir 
-!
-! Solve a stochastic SIER disease progression model 
+!=============================================================================!
 !
 ! This follows the formulation and approach presented in:
 !
@@ -72,7 +87,12 @@ program sanseir
   integer :: narg, iarg, nfile=0, ifile(mfile)
   character(80) :: arg, iname, ofile, sfile, rfile
 
-  logical :: use_rk4=.false.
+  logical :: use_rk4=.false.   !< Whether to use RK4 (default is RKCK45).
+
+  real :: alphai               !< Sample of \f$\alpha\f$
+  real :: gammai               !< Sample of \f$\gamma\f$
+  real :: alphas               !< Average \f$\alpha\f$
+  real :: gammas               !< Average \f$\famma\f$
 !=============================================================================!
 
 ! parse arguments
@@ -152,9 +172,9 @@ program sanseir
   alphai = max(one,erlang_sample(Erlang_k,alpham))
   gammai = max(one,erlang_sample(Erlang_k,gammam))
 
-  alpha = one/alphai
-  gam   = one/gammai
-  beta  = Ro*gam
+  alphat = one/alphai
+  gammat = one/gammai
+  beta   = Ro*gammat
 
 ! set the initial condition
 ! U = {S, E, Ih, Ic, Rh, Rc, Dh, Dc}
@@ -170,15 +190,15 @@ program sanseir
 #endif
 
 #ifdef TEST_ERLANG
-  alpha = 0
-  gam   = 0
+  alphas = 0
+  gammas = 0
   do n = 1, 100000 
     alphai = max(alpha_min,Erlang_sample(Erlang_k,alpham))
     gammai = max(gamma_min,erlang_sample(Erlang_k,gammam))
-    alpha = alpha + alphai
-    gam   = gam   + gammai
+    alphas = alphas + alphai
+    gammas = gammas   + gammai
   end do
-  write(*,*) alpha/100000, gam/100000
+  write(*,*) alphas/100000, gammas/100000
   call exit(0)
 #endif
 
@@ -193,9 +213,9 @@ program sanseir
         V(:)   = zero
         alphai = max(alpha_min,Erlang_sample(Erlang_k,alpham))
         gammai = max(gamma_min,Erlang_sample(Erlang_k,gammam))
-        alpha = one/alphai
-        gam   = one/gammai
-        beta  = Ro*gam
+        alphat = one/alphai
+        gammat = one/gammai
+        beta   = Ro*gammat
         if (use_rk4) then
           call rk4(neq,U(:,i-1),V,t(i-1),dt,seir)
         else
@@ -242,30 +262,28 @@ end program sanseir
 !> \param[in] x value for which probability is sought
 !> \param[in] k Erlang shape parameter 
 !> \param[in] mean Mean value of the distribution 
-!> \return erlang probability from Erlang_k distribution 
-!=============================================================================!
-function erlang(x, k, mean)
+!> \return probability from Erlang_k distribution 
+function Erlang(x, k, mean)
 !=============================================================================!
   implicit none
   integer k
-  real erlang, x, mean, lambda, invfact
+  real Erlang, x, mean, lambda, invfact
 !=============================================================================!
   lambda = k/mean
   invfact = 1.0/Gamma(real(k))
-  erlang = lambda**k*x**(k-1)*exp(-lambda*x)*invfact
-end function erlang
+  Erlang = lambda**k*x**(k-1)*exp(-lambda*x)*invfact
+end function Erlang
 
 !=============================================================================!
 !> \brief Sample from an Erlang distribution 
 !> \param[in] k Erlang shape parameter 
 !> \param[in] mean Mean value of the distribution 
-!> \return erlang_sample sample from Erlang_k distribution 
-!=============================================================================!
-function erlang_sample(k, mean)
+!> \return sample from Erlang_k distribution 
+function Erlang_sample(k, mean)
 !=============================================================================!
   implicit none
   integer k, i
-  real erlang_sample, r(k), prod, mean, lambda
+  real Erlang_sample, r(k), prod, mean, lambda
 !=============================================================================!
   if (k.eq.0) then
     erlang_sample = mean 
@@ -277,8 +295,8 @@ function erlang_sample(k, mean)
   do i = 2, k
     prod = prod*r(i)
   end do
-  erlang_sample = -1.0/lambda*log(prod) 
-end function erlang_sample
+  Erlang_sample = -1.0/lambda*log(prod) 
+end function Erlang_sample
 
 !=============================================================================!
 !> \brief Compute the time-derivative of the SEIR model
@@ -286,7 +304,6 @@ end function erlang_sample
 !> \param[in] U state fector at time t
 !> \param[in] t current time
 !> \param[out] dUdt time-derivative at time t 
-!=============================================================================!
 subroutine seir(neq, U, t, dUdt)
 !=============================================================================!
   use constants
@@ -324,13 +341,13 @@ subroutine seir(neq, U, t, dUdt)
   end do
 
   dUdt(1) = -b*Ic*S*Ni
-  dUdt(2) =  b*Ic*S*Ni - alpha*E
-  dUdt(3) =  alpha*r*E - gam*Ih 
-  dUdt(4) =  alpha*(one-r)*E - gam*Ic 
-  dUdt(5) =  gam*(one-c)*Ih 
-  dUdt(6) =  gam*(one-c)*Ic
-  dUdt(7) =  gam*c*Ih
-  dUdt(8) =  gam*c*Ic
+  dUdt(2) =  b*Ic*S*Ni - alphat*E
+  dUdt(3) =  alphat*r*E - gammat*Ih 
+  dUdt(4) =  alphat*(one-r)*E - gammat*Ic 
+  dUdt(5) =  gammat*(one-c)*Ih 
+  dUdt(6) =  gammat*(one-c)*Ic
+  dUdt(7) =  gammat*c*Ih
+  dUdt(8) =  gammat*c*Ic
 
   return
 end subroutine seir
@@ -343,7 +360,6 @@ end subroutine seir
 !> \param[in] to intial time
 !> \param[in] h time step
 !> \param[in] FUNC function to integrate
-!=============================================================================!
 subroutine RKCK45(neq, yo, yf, to, h, FUNC)
 !=============================================================================!
 !
@@ -427,7 +443,6 @@ end subroutine RKCK45
 !> \param[in] to intial time
 !> \param[in] h time step
 !> \param[in] FUNC function to integrate
-!=============================================================================!
 subroutine RK4(neq, yo, yf, to, h, FUNC)
 !=============================================================================!
 !
