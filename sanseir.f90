@@ -38,6 +38,8 @@ module seir_model
   real :: beta(mk)             !< Contact rate (per phase)
   real :: rho(mk)              !< Testing fraction (per phase)
   real :: c                    !< Mortality rate
+  real :: cfr                  !< Case fatality rate
+  logical :: use_cfr=.false.   !< use CFR
   real :: alpham               !< Mean value for incubation period, \f$\alpha\f$
   real :: gammam               !< Mean value for infectious period, \f$\gamma\f$
   real :: to=0                 !< Starting time (days)
@@ -51,7 +53,7 @@ module seir_model
   real    :: gamma_min=1       !< Minimum value of \f$\gamma\f$
 
   namelist /model/ title, P, Io, alpham, gammam, Erlang_k, Erlang_n, Ro, &
-                   rho, c, Fa, alpha_min, gamma_min
+                   rho, c, Fa, alpha_min, gamma_min, cfr, use_cfr
   namelist /time/ to, tf, nt, tk, nk
 end module seir_model 
 
@@ -112,7 +114,7 @@ program sanseir
       case ('-rk')
         write(*,'("Using RK4 instead of RKCK45")')
         use_rk4 = .true.
-      case ('-h ')
+      case ('-h')
         write(*,"('--------------------------------------------------')")
         write(*,"('Usage: sanseir [options] [file]')")
         write(*,"('--------------------------------------------------')")
@@ -312,7 +314,7 @@ subroutine seir(neq, U, t, dUdt)
   real, external :: erlang_sample
   integer neq, i, k
   real U(neq), t, dUdt(neq), b, r
-  real N, Ni, S, E, Ih, Ic, Rh, Rc
+  real N, Ni, S, E, Ih, Ic, Rh, Rc, It, ct
 !=============================================================================!
 
 ! compute the effective total population
@@ -340,14 +342,27 @@ subroutine seir(neq, U, t, dUdt)
     endif
   end do
 
-  dUdt(1) = -b*Ic*S*Ni
-  dUdt(2) =  b*Ic*S*Ni - alphat*E
-  dUdt(3) =  alphat*r*E - gammat*Ih 
-  dUdt(4) =  alphat*(one-r)*E - gammat*Ic 
-  dUdt(5) =  gammat*(one-c)*Ih 
-  dUdt(6) =  gammat*(one-c)*Ic
-  dUdt(7) =  gammat*c*Ih
-  dUdt(8) =  gammat*c*Ic
+  if (.not.use_cfr) then 
+    dUdt(1) = -b*Ic*S*Ni
+    dUdt(2) =  b*Ic*S*Ni - alphat*E
+    dUdt(3) =  alphat*r*E - gammat*Ih 
+    dUdt(4) =  alphat*(one-r)*E - gammat*Ic 
+    dUdt(5) =  gammat*(one-c)*Ih 
+    dUdt(6) =  gammat*(one-c)*Ic
+    dUdt(7) =  gammat*c*Ih
+    dUdt(8) =  gammat*c*Ic
+  else
+    It = (Ih + Fa*Ic)        ! confirmed cases
+    ct = cfr * It/(Ih+Ic)    ! convert CFR to c
+    dUdt(1) = -b*Ic*S*Ni
+    dUdt(2) =  b*Ic*S*Ni - alphat*E
+    dUdt(3) =  alphat*r*E - gammat*Ih 
+    dUdt(4) =  alphat*(one-r)*E - gammat*Ic 
+    dUdt(5) =  gammat*(one-ct)*Ih 
+    dUdt(6) =  gammat*(one-ct)*Ic
+    dUdt(7) =  gammat*ct*Ih
+    dUdt(8) =  gammat*ct*Ic
+  endif
 
   return
 end subroutine seir
