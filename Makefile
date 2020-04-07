@@ -22,13 +22,13 @@ F77      = gfortran
 
 OBJECTS = sanseir.o
 
-all: $(NAME) 
+$(NAME): $(OBJECTS)
+	$(FC) $(OFLAGS) $(OBJECTS) $(LIB)
+
+all: $(NAME) docs
 
 docs:
 	doxygen
-
-$(NAME): $(OBJECTS)
-	$(FC) $(OFLAGS) $(OBJECTS) $(LIB)
 
 .f90.o:
 	$(FC) $(F90FLAGS) -c $*.f90 
