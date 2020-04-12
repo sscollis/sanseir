@@ -1,0 +1,32 @@
+!
+! Sample SanSEIR input file for all of USA
+! Key Asumptions:
+!  1) Schedule of social distancing policies
+!  2) Overall mortality rate of 1.1%
+!  3) Starts from 5 infected individuals
+!  4) Testing is modest
+!
+&time
+to = 0                    ! initial time (days)
+tf = 250                  ! end time (days)
+nt = 750                  ! number of time steps
+nk = 1                    ! number of policy phases
+tk = 0                    ! day of policy phase start
+/
+&model
+title    = "Small case"
+P        = 7000           ! total population
+Io       = 1              ! intitial infected population
+alpham   = 5.2            ! mean incubation period
+gammam   = 3.0            ! mean infectious period
+Erlang_k = 2              ! Erlang shape
+Erlang_n = 100            ! Erlang number of samples
+
+Ro       = 2.9            ! reproduction rate
+rho      = 0.05           ! proportion of pre-tested exposed individuals
+
+c        = 0.02           ! mortality rate
+fa       = 0.20           ! fraction of community accounted for
+alpha_min = 1.0           ! minimum value of alpha allowed
+gamma_min = 1.0           ! minimum value of gamma allowed
+/
