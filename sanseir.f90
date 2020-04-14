@@ -51,9 +51,10 @@ module seir_model
   integer :: Erlang_n=100      !< Number of Erlang samples
   real    :: alpha_min=1       !< Minimum value of \f$\alpha\f$
   real    :: gamma_min=1       !< Minimum value of \f$\gamma\f$
+  integer :: ms=50             !< Number of samples in ensemble
 
   namelist /model/ title, P, Io, alpham, gammam, Erlang_k, Erlang_n, Ro, &
-                   rho, c, Fa, alpha_min, gamma_min, cfr, use_cfr
+                   rho, c, Fa, alpha_min, gamma_min, cfr, use_cfr, ms
   namelist /time/ to, tf, nt, tk, nk
 end module seir_model 
 
@@ -78,7 +79,7 @@ program sanseir
   use seir_model 
   implicit none
 
-  integer :: i, n, ns, ms=50
+  integer :: i, n, ns
   external :: seir
   real, external :: erlang_sample
 
