@@ -27,7 +27,7 @@ end module constants
 module seir_model
   implicit none
   character(60) :: title="disease progression model"  !< Title of run
-  integer, parameter :: mk=6   !< max number of phases
+  integer, parameter :: mk=10  !< max number of phases
   integer :: nk=1              !< number of phases
   real :: Ro(mk)               !< Reproduction rate per phase
   real :: tk(mk)               !< Time of each phase
@@ -95,6 +95,8 @@ program sanseir
   real :: gammai               !< Sample of \f$\gamma\f$
   real :: alphas               !< Average \f$\alpha\f$
   real :: gammas               !< Average \f$\famma\f$
+  real :: Cr                   !< Cases (reported)
+  real :: dCrdt                !< rate of cases reported
 !=============================================================================!
 
 ! parse arguments
@@ -238,24 +240,27 @@ program sanseir
     open(unit=20,file=sfile)
     open(unit=30,file=rfile)
 !=============================================================================!
-! Column Index:   1  2  3   4   5   6   7   8   9     10    11  12
+! Column Index:   1  2  3   4   5   6   7   8   9     10    11  12 13
 !=============================================================================!
-    write(10,'("# t, S, E, Ih, Ic, Rh, Rc, Dh, Dc, Ih+0.2Ic, R, D")')
-    write(20,'("# t, S, E, Ih, Ic, Rh, Rc, Dh, Dc, Ih+0.2Ic, R, D")')
-    write(30,'("# t, S, E, Ih, Ic, Rh, Rc, Dh, Dc, Ih+0.2Ic, R, D")')
+    write(10,'("# t, S, E, Ih, Ic, Rh, Rc, Dh, Dc, Ih+0.2Ic, R, D, Cr")')
+    write(20,'("# t, S, E, Ih, Ic, Rh, Rc, Dh, Dc, Ih+0.2Ic, R, D, Cr")')
+    write(30,'("# t, S, E, Ih, Ic, Rh, Rc, Dh, Dc, Ih+0.2Ic, R, D, Cr")')
     do i = 0, nt
-      write(10,10) t(i), U(:,i), U(3,i)+Fa*U(4,i), U(5,i)+U(6,i), U(7,i)+U(8,i)
+      Cr    = U(5,i)+Fa*U(6,i)+U(7,i)+U(8,i)              ! Cases (reported)
+      dCrdt = dUdt(5,i)+Fa*dUdt(6,i)+dUdt(7,i)+dUdt(8,i)  ! Cases (reported)
+      write(10,10) t(i), U(:,i), U(3,i)+Fa*U(4,i), U(5,i)+U(6,i), &
+                   U(7,i)+U(8,i), Cr 
       write(20,10) t(i), U(:,i)/P, (U(3,i)+Fa*U(4,i))/P, (U(5,i)+U(6,i))/P, &
-                   (U(7,i)+U(8,i))/P
+                   (U(7,i)+U(8,i))/P, Cr/P
       write(30,10) t(i), dUdt(:,i), dUdt(3,i)+Fa*dUdt(4,i), &
-                   dUdt(5,i)+dUdt(6,i), dUdt(7,i)+dUdt(8,i)
+                   dUdt(5,i)+dUdt(6,i), dUdt(7,i)+dUdt(8,i), dCrdt
     end do
     close(10)
     close(20)
     close(30)
   end do
 
-10 format(12(1pe16.8E3,1x))
+10 format(12(1pe16.8E3,', '),1pe16.8e3)
   stop
 end program sanseir
 
