@@ -66,4 +66,3 @@ Item       |  Description
 ![USA Infections](https://github.com/sscollis/sanseir/blob/master/yeo-etal/usa/usa-infected.png)
 
 S. Scott Collis\
-Fri Apr  3 06:01:56 MDT 2020
